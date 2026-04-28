@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Traffic System</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+        }
+
+        .container {
+            width: 400px;
+            margin: 60px auto;
+            padding: 25px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00e6e6;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        label {
+            font-size: 14px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .check {
+            background: #00c853;
+            color: white;
+        }
+
+        .view {
+            background: #2962ff;
+            color: white;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        #output {
+            margin-top: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            color: black;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #2962ff;
+            color: white;
+            padding: 8px;
+        }
+
+        td {
+            padding: 8px;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+
+        .result {
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: #00e676;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>🚦 Smart Traffic System</h2>
+
+    <input id="vehicle" placeholder="Vehicle ID">
+    <input id="speed" placeholder="Speed">
+    <input id="zone" placeholder="Zone">
+
+    <label>
+        <input type="checkbox" id="emergency"> Emergency Vehicle
+    </label>
+
+    <div class="buttons">
+        <button class="check" onclick="check()">Check</button>
+        <button class="view" onclick="view()">View Records</button>
+    </div>
+
+    <div class="result" id="result"></div>
+
+    <div id="output"></div>
+
+</div>
+
+<script>
+
+function check() {
+    fetch("http://localhost:8080/traffic/check?emergency=" + document.getElementById("emergency").checked, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            vehicleId: document.getElementById("vehicle").value,
+            speed: document.getElementById("speed").value,
+            zone: document.getElementById("zone").value
+        })
+    })
+    .then(res => res.text())
+    .then(data => {
+        document.getElementById("result").innerText = data;
+    });
+}
+
+function view() {
+    fetch("http://localhost:8080/traffic/all")
+    .then(res => res.json())
+    .then(data => {
+
+        let table = "<table><tr><th>ID</th><th>Vehicle</th><th>Speed</th><th>Zone</th><th>Fine</th></tr>";
+
+        data.forEach(v => {
+            table += `<tr>
+                        <td>${v.id}</td>
+                        <td>${v.vehicleId}</td>
+                        <td>${v.speed}</td>
+                        <td>${v.zone}</td>
+                        <td>₹${v.fine}</td>
+                      </tr>`;
+        });
+
+        table += "</table>";
+
+        document.getElementById("output").innerHTML = table;
+    });
+}
+
+</script>
+
+</body>
+</html>
